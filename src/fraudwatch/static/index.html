@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FraudWatch</title>
+<style>
+  :root { --ink:#1b1f24; --muted:#5c6670; --line:#d9dee3; --bg:#f6f7f8; --card:#fff;
+          --ok:#1f7a4d; --warn:#a86b00; --bad:#b3261e; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui, sans-serif; color:var(--ink); background:var(--bg); }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
+  h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  p.sub { margin: 0 0 20px; color: var(--muted); }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; }
+  .btns { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  button { padding:8px 12px; border:1px solid var(--line); border-radius:6px; background:#fff; font:inherit; cursor:pointer; }
+  button.primary { background:var(--ink); color:#fff; border-color:var(--ink); width:100%; font-weight:600; margin-top:10px; }
+  textarea { width:100%; height:320px; font:12px/1.4 ui-monospace, monospace; padding:8px; border:1px solid var(--line); border-radius:6px; }
+  .big { font-size:2.4rem; font-weight:700; }
+  .pill { display:inline-block; padding:2px 10px; border-radius:99px; font-weight:600; color:#fff; }
+  .allow { background:var(--ok); } .review { background:var(--warn); } .block { background:var(--bad); }
+  ul { padding-left:18px; } .muted { color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>FraudWatch</h1>
+  <p class="sub">Card transaction fraud scoring &middot; <a href="/docs">API docs</a></p>
+  <div class="grid">
+    <div class="card">
+      <div class="muted" style="margin-bottom:6px">Load a real transaction from the test period:</div>
+      <div class="btns" id="btns"></div>
+      <textarea id="txn" spellcheck="false"></textarea>
+      <button class="primary" id="go">Score transaction</button>
+    </div>
+    <section class="card" id="out"><p class="muted">Pick an example and press "Score transaction".</p></section>
+  </div>
+</main>
+<script>
+const txt = document.getElementById("txn"), out = document.getElementById("out"), btns = document.getElementById("btns");
+fetch("/examples").then(r => r.json()).then(list => {
+  list.forEach((ex, i) => {
+    const b = document.createElement("button");
+    b.textContent = `#${i + 1} (actually ${ex.label})`;
+    b.onclick = () => { txt.value = JSON.stringify(ex.transaction, null, 1); };
+    btns.appendChild(b);
+  });
+  if (list.length) txt.value = JSON.stringify(list[0].transaction, null, 1);
+});
+document.getElementById("go").onclick = async () => {
+  let body;
+  try { body = JSON.parse(txt.value); } catch { out.innerHTML = `<p style="color:var(--bad)">Not valid JSON</p>`; return; }
+  const res = await fetch("/score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const r = await res.json();
+  if (!res.ok) { out.innerHTML = `<p style="color:var(--bad)">Error: ${JSON.stringify(r.detail)}</p>`; return; }
+  const reasons = r.reasons.map(x => `<li><b>${x.feature}</b> = ${x.value} <span class="muted">(+${x.contribution})</span></li>`).join("");
+  out.innerHTML = `
+    <div class="muted">Fraud probability</div><div class="big">${(r.fraud_probability * 100).toFixed(1)}%</div>
+    <p><span class="pill ${r.decision}">${r.decision}</span> <span class="muted">&middot; ${r.latency_ms} ms</span></p>
+    <div class="muted">What pushed the score up</div><ul>${reasons || "<li>Nothing unusual</li>"}</ul>`;
+};
+</script>
+</body>
+</html>

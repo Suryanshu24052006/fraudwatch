@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: fraudwatch
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && PYTHONPATH=src python -m fraudwatch.train
+    startCommand: PYTHONPATH=src uvicorn fraudwatch.api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7

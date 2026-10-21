@@ -1,0 +1,96 @@
+{
+  "split": {
+    "train": 170884,
+    "valid": 56961,
+    "test": 56962,
+    "frauds_test": 75
+  },
+  "review_cost_per_alert": 5.0,
+  "lightgbm_trees": 467,
+  "models_test": {
+    "isolation_forest": {
+      "pr_auc": 0.051,
+      "roc_auc": 0.9542,
+      "frauds": 75,
+      "transactions": 56962,
+      "precision_at_100": 0.06,
+      "recall_at_80pct_precision": 0.0
+    },
+    "logistic_regression": {
+      "pr_auc": 0.7484,
+      "roc_auc": 0.9833,
+      "frauds": 75,
+      "transactions": 56962,
+      "precision_at_100": 0.59,
+      "recall_at_80pct_precision": 0.6933
+    },
+    "lightgbm": {
+      "pr_auc": 0.8067,
+      "roc_auc": 0.983,
+      "frauds": 75,
+      "transactions": 56962,
+      "precision_at_100": 0.6,
+      "recall_at_80pct_precision": 0.7733
+    }
+  },
+  "thresholds": {
+    "review": 0.31,
+    "block": 0.8
+  },
+  "lightgbm_test_at_0.5": {
+    "threshold": 0.5,
+    "alerts": 57,
+    "frauds_caught": 54,
+    "frauds_missed": 21,
+    "false_alerts": 3,
+    "precision": 0.9474,
+    "recall": 0.72,
+    "fraud_amount_caught": 4054.06,
+    "fraud_amount_missed": 3675.2,
+    "review_cost": 285.0,
+    "total_cost": 3960.2
+  },
+  "lightgbm_test_at_review_threshold": {
+    "threshold": 0.31,
+    "alerts": 64,
+    "frauds_caught": 57,
+    "frauds_missed": 18,
+    "false_alerts": 7,
+    "precision": 0.8906,
+    "recall": 0.76,
+    "fraud_amount_caught": 5090.99,
+    "fraud_amount_missed": 2638.27,
+    "review_cost": 320.0,
+    "total_cost": 2958.27
+  },
+  "lightgbm_test_at_block_threshold": {
+    "threshold": 0.8,
+    "alerts": 46,
+    "frauds_caught": 46,
+    "frauds_missed": 29,
+    "false_alerts": 0,
+    "precision": 1.0,
+    "recall": 0.6133,
+    "fraud_amount_caught": 3627.63,
+    "fraud_amount_missed": 4101.63,
+    "review_cost": 230.0,
+    "total_cost": 4331.63
+  },
+  "test_no_model": {
+    "fraud_amount_missed": 7729.26
+  },
+  "policy_test": {
+    "allow": {
+      "transactions": 56898,
+      "frauds": 18
+    },
+    "review": {
+      "transactions": 18,
+      "frauds": 11
+    },
+    "block": {
+      "transactions": 46,
+      "frauds": 46
+    }
+  }
+}
