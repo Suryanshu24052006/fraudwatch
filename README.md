@@ -1,5 +1,7 @@
 # FraudWatch
 
+**Live demo:** https://fraudwatch-18ue.onrender.com (free tier, first load can take ~50 s to wake up)
+
 Card transaction fraud detection on the Kaggle / ULB "Credit Card Fraud Detection" dataset (284,807 European card transactions over 2 days, only 492 frauds = 0.17%). The model scores each transaction, and a policy decides to allow it, send it to an analyst, or block it.
 
 What I focused on:

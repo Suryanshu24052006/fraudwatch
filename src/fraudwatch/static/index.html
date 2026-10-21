@@ -4,63 +4,172 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FraudWatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-  :root { --ink:#1b1f24; --muted:#5c6670; --line:#d9dee3; --bg:#f6f7f8; --card:#fff;
-          --ok:#1f7a4d; --warn:#a86b00; --bad:#b3261e; }
-  * { box-sizing: border-box; }
-  body { margin:0; font:15px/1.5 system-ui, sans-serif; color:var(--ink); background:var(--bg); }
-  main { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
-  h1 { margin: 0 0 4px; font-size: 1.6rem; }
-  p.sub { margin: 0 0 20px; color: var(--muted); }
-  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:16px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; }
-  .btns { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
-  button { padding:8px 12px; border:1px solid var(--line); border-radius:6px; background:#fff; font:inherit; cursor:pointer; }
-  button.primary { background:var(--ink); color:#fff; border-color:var(--ink); width:100%; font-weight:600; margin-top:10px; }
-  textarea { width:100%; height:320px; font:12px/1.4 ui-monospace, monospace; padding:8px; border:1px solid var(--line); border-radius:6px; }
-  .big { font-size:2.4rem; font-weight:700; }
-  .pill { display:inline-block; padding:2px 10px; border-radius:99px; font-weight:600; color:#fff; }
-  .allow { background:var(--ok); } .review { background:var(--warn); } .block { background:var(--bad); }
-  ul { padding-left:18px; } .muted { color:var(--muted); }
+  :root {
+    --bg:#f4f6f9; --card:#ffffff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --soft:#f3f4f6;
+    --accent:#2563eb; --ok:#059669; --ok-soft:#d1fae5; --warn:#d97706; --warn-soft:#fef3c7;
+    --bad:#dc2626; --bad-soft:#fee2e2; --shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 24px -12px rgba(0,0,0,.15);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0b1020; --card:#121a2e; --ink:#e5e7eb; --muted:#94a3b8; --line:#1f2a44; --soft:#0f172a;
+      --accent:#60a5fa; --ok:#34d399; --ok-soft:#06281f; --warn:#fbbf24; --warn-soft:#2b2108;
+      --bad:#f87171; --bad-soft:#2d1214; --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.8);
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 Inter, system-ui, sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:28px 16px 48px; }
+  header { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:20px; }
+  h1 { margin:0; font-size:1.8rem; letter-spacing:-.02em; }
+  h1 span { color:var(--accent); }
+  .sub { color:var(--muted); margin:4px 0 0; }
+  .links a { color:var(--accent); text-decoration:none; font-weight:500; margin-left:14px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; box-shadow:var(--shadow); }
+  .stat b { display:block; font-size:1.35rem; }
+  .stat small { color:var(--muted); }
+  .grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:16px; align-items:start; }
+  @media (max-width:820px) { .grid { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; box-shadow:var(--shadow); }
+  .card h2 { margin:0 0 4px; font-size:1.05rem; }
+  .card p.hint { margin:0 0 14px; color:var(--muted); font-size:.88rem; }
+  .examples { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+  .ex { text-align:left; border:1px solid var(--line); background:var(--soft); color:var(--ink); border-radius:10px;
+        padding:10px 12px; cursor:pointer; font:inherit; transition:border-color .15s, transform .15s; }
+  .ex:hover { border-color:var(--accent); transform:translateY(-1px); }
+  .ex.active { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+  .ex .amt { font-weight:700; font-size:1.1rem; }
+  .ex .meta { color:var(--muted); font-size:.8rem; }
+  .tag { display:inline-block; font-size:.7rem; font-weight:600; padding:1px 8px; border-radius:99px; margin-top:6px; }
+  .tag.fraud { background:var(--bad-soft); color:var(--bad); }
+  .tag.normal { background:var(--ok-soft); color:var(--ok); }
+  details { margin-top:14px; }
+  summary { cursor:pointer; color:var(--muted); font-size:.88rem; }
+  textarea { width:100%; height:220px; margin-top:8px; font:12px/1.45 "JetBrains Mono", monospace; color:var(--ink);
+             background:var(--soft); border:1px solid var(--line); border-radius:8px; padding:10px; }
+  .go { width:100%; margin-top:14px; padding:12px; border:0; border-radius:10px; background:var(--accent); color:#fff;
+        font:600 15px Inter, sans-serif; cursor:pointer; }
+  .go:disabled { opacity:.6; cursor:wait; }
+  .empty { color:var(--muted); text-align:center; padding:48px 12px; }
+  .prob { font-size:3rem; font-weight:700; letter-spacing:-.03em; line-height:1; }
+  .meter { position:relative; height:10px; border-radius:99px; margin:14px 0 6px;
+           background:linear-gradient(90deg, var(--ok) 0 31%, var(--warn) 31% 80%, var(--bad) 80% 100%); opacity:.9; }
+  .needle { position:absolute; top:-5px; width:4px; height:20px; border-radius:2px; background:var(--ink); transform:translateX(-2px); transition:left .4s; }
+  .scale { display:flex; justify-content:space-between; color:var(--muted); font-size:.72rem; }
+  .decision { display:inline-flex; align-items:center; gap:8px; margin:16px 0 4px; padding:6px 14px; border-radius:99px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; font-size:.85rem; }
+  .decision.allow { background:var(--ok-soft); color:var(--ok); }
+  .decision.review { background:var(--warn-soft); color:var(--warn); }
+  .decision.block { background:var(--bad-soft); color:var(--bad); }
+  .truth { color:var(--muted); font-size:.85rem; margin-left:8px; }
+  .reasons { margin-top:18px; }
+  .reasons h3 { margin:0 0 8px; font-size:.9rem; color:var(--muted); font-weight:600; }
+  .r { display:grid; grid-template-columns:90px 1fr 56px; gap:10px; align-items:center; margin-bottom:8px; font-size:.88rem; }
+  .r code { font-family:"JetBrains Mono", monospace; }
+  .bar { height:8px; border-radius:99px; background:var(--soft); overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--bad); border-radius:99px; }
+  .r span { text-align:right; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .foot { color:var(--muted); font-size:.8rem; margin-top:16px; }
+  .policy { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; font-size:.8rem; color:var(--muted); }
+  .policy b { color:var(--ink); }
 </style>
 </head>
 <body>
 <main>
-  <h1>FraudWatch</h1>
-  <p class="sub">Card transaction fraud scoring &middot; <a href="/docs">API docs</a></p>
-  <div class="grid">
-    <div class="card">
-      <div class="muted" style="margin-bottom:6px">Load a real transaction from the test period:</div>
-      <div class="btns" id="btns"></div>
-      <textarea id="txn" spellcheck="false"></textarea>
-      <button class="primary" id="go">Score transaction</button>
+  <header>
+    <div>
+      <h1>Fraud<span>Watch</span></h1>
+      <p class="sub">Real-time card fraud scoring with LightGBM and a cost-based alert threshold</p>
     </div>
-    <section class="card" id="out"><p class="muted">Pick an example and press "Score transaction".</p></section>
+    <div class="links"><a href="/docs">API docs</a><a href="https://github.com/Suryanshu24052006/fraudwatch">GitHub</a></div>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><b>0.807</b><small>PR-AUC on unseen future data</small></div>
+    <div class="stat"><b>76%</b><small>of frauds caught at 89% precision</small></div>
+    <div class="stat"><b>0</b><small>genuine payments blocked (test set)</small></div>
+    <div class="stat"><b>~25%</b><small>lower cost than a 0.5 threshold</small></div>
+  </section>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Pick a transaction</h2>
+      <p class="hint">Real transactions from the test period, which the model never saw in training. The tag shows what actually happened.</p>
+      <div class="examples" id="examples"></div>
+      <details>
+        <summary>Edit the raw features (amount, hour, V1–V28)</summary>
+        <textarea id="txn" spellcheck="false"></textarea>
+      </details>
+      <button class="go" id="go">Score transaction</button>
+    </section>
+
+    <section class="card" id="out">
+      <div class="empty">Choose a transaction and press <b>Score transaction</b>.</div>
+    </section>
   </div>
+  <p class="foot">Data: ULB / Kaggle credit card fraud dataset (European cardholders, 2 days, 0.17% fraud). V1–V28 are anonymised PCA features.</p>
 </main>
 <script>
-const txt = document.getElementById("txn"), out = document.getElementById("out"), btns = document.getElementById("btns");
+const txt = document.getElementById("txn"), out = document.getElementById("out"),
+      box = document.getElementById("examples"), go = document.getElementById("go");
+let thresholds = { review: 0.31, block: 0.8 }, current = null;
+
+fetch("/health").then(r => r.json()).then(h => { if (h.thresholds) thresholds = h.thresholds; }).catch(() => {});
+
 fetch("/examples").then(r => r.json()).then(list => {
   list.forEach((ex, i) => {
-    const b = document.createElement("button");
-    b.textContent = `#${i + 1} (actually ${ex.label})`;
-    b.onclick = () => { txt.value = JSON.stringify(ex.transaction, null, 1); };
-    btns.appendChild(b);
+    const t = ex.transaction, b = document.createElement("button");
+    b.className = "ex";
+    b.innerHTML = `<div class="amt">€${t.amount.toFixed(2)}</div>
+      <div class="meta">Txn #${i + 1} · ${String(t.hour).padStart(2, "0")}:00</div>
+      <span class="tag ${ex.label}">actually ${ex.label}</span>`;
+    b.onclick = () => select(ex, b);
+    box.appendChild(b);
+    if (i === 0) select(ex, b);
   });
-  if (list.length) txt.value = JSON.stringify(list[0].transaction, null, 1);
 });
-document.getElementById("go").onclick = async () => {
+
+function select(ex, el) {
+  current = ex;
+  document.querySelectorAll(".ex").forEach(e => e.classList.remove("active"));
+  el.classList.add("active");
+  txt.value = JSON.stringify(ex.transaction, null, 1);
+}
+
+go.onclick = async () => {
   let body;
-  try { body = JSON.parse(txt.value); } catch { out.innerHTML = `<p style="color:var(--bad)">Not valid JSON</p>`; return; }
-  const res = await fetch("/score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const r = await res.json();
-  if (!res.ok) { out.innerHTML = `<p style="color:var(--bad)">Error: ${JSON.stringify(r.detail)}</p>`; return; }
-  const reasons = r.reasons.map(x => `<li><b>${x.feature}</b> = ${x.value} <span class="muted">(+${x.contribution})</span></li>`).join("");
-  out.innerHTML = `
-    <div class="muted">Fraud probability</div><div class="big">${(r.fraud_probability * 100).toFixed(1)}%</div>
-    <p><span class="pill ${r.decision}">${r.decision}</span> <span class="muted">&middot; ${r.latency_ms} ms</span></p>
-    <div class="muted">What pushed the score up</div><ul>${reasons || "<li>Nothing unusual</li>"}</ul>`;
+  try { body = JSON.parse(txt.value); } catch { out.innerHTML = `<div class="empty" style="color:var(--bad)">That isn't valid JSON.</div>`; return; }
+  go.disabled = true; go.textContent = "Scoring…";
+  try {
+    const res = await fetch("/score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const r = await res.json();
+    if (!res.ok) throw new Error(JSON.stringify(r.detail));
+    render(r);
+  } catch (e) {
+    out.innerHTML = `<div class="empty" style="color:var(--bad)">Error: ${e.message}</div>`;
+  } finally { go.disabled = false; go.textContent = "Score transaction"; }
 };
+
+function render(r) {
+  const pct = r.fraud_probability * 100;
+  const max = Math.max(...r.reasons.map(x => x.contribution), 1e-9);
+  const reasons = r.reasons.map(x => `
+    <div class="r"><code>${x.feature} = ${x.value}</code>
+      <div class="bar"><i style="width:${(x.contribution / max) * 100}%"></i></div>
+      <span>+${x.contribution.toFixed(2)}</span></div>`).join("");
+  const edited = current && JSON.stringify(current.transaction, null, 1) !== txt.value;
+  const truth = current && !edited ? `<span class="truth">actually ${current.label}</span>` : "";
+  out.innerHTML = `
+    <h2>Fraud probability</h2>
+    <div class="prob">${pct < 0.1 ? "<0.1" : pct.toFixed(1)}%</div>
+    <div class="meter"><div class="needle" style="left:${Math.min(Math.max(pct, 0.5), 99.5)}%"></div></div>
+    <div class="scale"><span>allow</span><span>review ≥ ${thresholds.review}</span><span>block ≥ ${thresholds.block}</span></div>
+    <div class="decision ${r.decision}">${r.decision}</div>${truth}
+    <div class="reasons"><h3>What pushed the score up (SHAP)</h3>${reasons || '<div class="hint">Nothing unusual in this transaction.</div>'}</div>
+    <div class="policy"><span>Scored in <b>${r.latency_ms} ms</b></span></div>`;
+}
 </script>
 </body>
 </html>
